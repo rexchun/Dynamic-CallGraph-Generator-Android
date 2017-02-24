@@ -32,7 +32,6 @@ How to interpret the call graph (shown in layers by BFS):
 
 9 java.lang.ClassLoader.loadClass (Ljava/lang/String;)Ljava/lang/Class;   ['10', 'excl']
 
-excl []
 ----------------------------------------------------
 .....
 
