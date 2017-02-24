@@ -2,9 +2,11 @@
 Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https://developer.android.com/studio/profile/traceview.html#dmtracedump]
 
 Usage scenario:
+
 Based on the trace file, you can easily generate the call graph starting from any customized entry component (Activity, Service, Content Provider, Receiver).You do not need to instrument the app or OS. The flow across framework call back functions are captured.    
 
 How to use:
+
   Set up the start/end point of dynamic analysis with Debug.startMethodTracing() and Debug.stopMethodTracing() in the Android source code, e.g. onCreate(), onDestory() of an Activity.
   Execute the app, manually or automatically with tools like monkey
   Collect the generated trace file from the phone: adb pull path-to-trace-file-on device
@@ -12,6 +14,7 @@ How to use:
   Generate the call graph: python BFS-CG.py profile.trace.dump[path-to-the-dumped-trace-file] "list.com.dynamicprofiledemo.MainActivity"[entry-class-name] callGraph.txt[outputfile]
 
 How to interpret the call graph (shown in layers by BFS):
+
 [id]  method signature [child methods's id]
 
 
