@@ -16,10 +16,12 @@ How to interpret the call graph (shown in layers by BFS):
 
 
 Layer 0:
+
 8 list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
 
 ----------------------------------------------------
 Layer 1:
+
 1633 android.support.v7.app.AppCompatActivity.findViewById (I)Landroid/view/View;    ['excl', '1694', '43']
 
 14 android.support.v7.app.AppCompatActivity.setContentView (I)V    ['excl', '15', '43']
@@ -36,5 +38,6 @@ Layer 1:
 
 ----------------------------------------------------
 Layer 2:
+
 .....
 
