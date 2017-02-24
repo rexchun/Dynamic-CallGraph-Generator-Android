@@ -14,15 +14,24 @@ How to use:
 How to interpret the call graph (shown in layers by BFS):
 [id]  method signature [child methods's id]
 
-8 list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V    ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
+8 list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
+
 ----------------------------------------------------
+
 1633 android.support.v7.app.AppCompatActivity.findViewById (I)Landroid/view/View;    ['excl', '1694', '43']
+
 14 android.support.v7.app.AppCompatActivity.setContentView (I)V    ['excl', '15', '43']
+
 2343 android.view.View.setOnClickListener (Landroid/view/View$OnClickListener;)V     ['excl', '2279', '2505', '3765']
+
 3942 list.com.dynamicprofiledemo.MainActivity$1.<init> (Llist/com/dynamicprofiledemo/MainActivity;)V ['excl', '355']
+
 37 android.support.v7.app.AppCompatActivity.onCreate (Landroid/os/Bundle;)V        ['338', '43', '2854', '378', '2018', 'excl']
+
 112 android.support.v7.app.AppCompatActivity.setSupportActionBar (Landroid/support/v7/widget/Toolbar;)V     ['excl', '43', '113']
+
 9 java.lang.ClassLoader.loadClass (Ljava/lang/String;)Ljava/lang/Class;   ['10', 'excl']
+
 excl []
 ----------------------------------------------------
 .....
