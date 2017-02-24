@@ -14,7 +14,7 @@ How to use:
 How to interpret the call graph (shown in layers by BFS):
 [id]  method signature [child methods's id]
 
-8       list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V        ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
+8       list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V    ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
 ----------------------------------------------------
 1633    android.support.v7.app.AppCompatActivity.findViewById (I)Landroid/view/View;    ['excl', '1694', '43']
 14      android.support.v7.app.AppCompatActivity.setContentView (I)V    ['excl', '15', '43']
@@ -28,7 +28,7 @@ excl            []
 1694    android.support.v7.app.AppCompatDelegateImplV9.findViewById (I)Landroid/view/View;      ['excl', '53', '1453']
 43      android.support.v7.app.AppCompatActivity.getDelegate ()Landroid/support/v7/app/AppCompatDelegate;       ['excl', '44']
 15      android.support.v7.app.AppCompatDelegateImplV9.setContentView (I)V      ['2486', '18', '1330', '53', '3974', 'excl', '1406']
-2279    android.view.View.setClickable (Z)V     ['487', 'excl']
+2279    android.view.View.setClickable (Z)V     ['487', 'excl'
 2505    android.view.View.getListenerInfo ()Landroid/view/View$ListenerInfo;    ['excl', '3032']
 3765    android.view.View.isClickable ()Z       ['excl']
 355     java.lang.Object.<init> ()V     ['excl']
