@@ -14,10 +14,12 @@ How to use:
 How to interpret the call graph (shown in layers by BFS):
 [id]  method signature [child methods's id]
 
+
+Layer 0:
 8 list.com.dynamicprofiledemo.MainActivity.onCreate (Landroid/os/Bundle;)V ['1633', '14', '2343', '3942', '37', '112', '9', 'excl']
 
 ----------------------------------------------------
-
+Layer 1:
 1633 android.support.v7.app.AppCompatActivity.findViewById (I)Landroid/view/View;    ['excl', '1694', '43']
 
 14 android.support.v7.app.AppCompatActivity.setContentView (I)V    ['excl', '15', '43']
@@ -33,5 +35,6 @@ How to interpret the call graph (shown in layers by BFS):
 9 java.lang.ClassLoader.loadClass (Ljava/lang/String;)Ljava/lang/Class;   ['10', 'excl']
 
 ----------------------------------------------------
+Layer 2:
 .....
 
