@@ -18,18 +18,30 @@ class Graph():
 		l = " ".join(l.split())
 		tokens = l.split(" ")
 		if tokens[0].find("%") >= 0:
-			res = tokens[1]
-			res = res.replace("[", "")
-			res = res.replace("]", "")
+			childId = tokens[1]
+			childId = childId.replace("[", "")
+			childId = childId.replace("]", "")
 		elif tokens[0].find("[") >= 0:
-			res = tokens[0]
-			res = res.replace("[", "")
-			res = res.replace("]", "")			
+			childId = tokens[0]
+			childId = childId.replace("[", "")
+			childId = childId.replace("]", "")			
 		else:
-			res = None
-		return res
+			childId = None
+
+		
+		if len(tokens) == 7:
+			childSig = "%s %s"%(tokens[4], tokens[5])
+		elif len(tokens) == 6:
+			childSig = "%s %s"%(tokens[3], tokens[4])
+		elif len(tokens) == 3:
+			childSig = ""
+		else:
+			childSig = None
+
+		return childId, childSig
 
 	def parseNode(self, l):
+		#print l
 		l = " ".join(l.split())
 		tokens = l.split(' ')
 		res = []
@@ -84,9 +96,11 @@ class Graph():
 									self.rootId = curNode.id
 							else:
 								if curNode != None:
-									child = self.parseChild(l)
-									if child != None:
-										curNode.neighbourIds.append(child)
+									childId, childSig = self.parseChild(l)
+									if childId != None and childSig != None:
+										curNode.neighbourIds.append(childId)
+										if childId not in self.nodeMap:
+											self.nodeMap[childId] = Node(childId, childSig)
 
 
 
@@ -120,6 +134,7 @@ class Graph():
 					else:
 						visited.add(childNodeId)
 						if childNodeId not in self.nodeMap:
+							print "Missing node definition Id: %s"%childNodeId
 							sysCallNode = Node(childNodeId, "")
 							self.nodeMap[childNodeId] = sysCallNode
 						
