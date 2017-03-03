@@ -7,7 +7,7 @@ Based on the trace file, you can easily generate the call graph starting from an
 
 How to use:
 
-  Set up the start/end point of dynamic analysis with Debug.startMethodTracing() and Debug.stopMethodTracing() in the Android source code, e.g. onCreate(), onDestory() of an Activity.
+  Set up the start/end point of dynamic analysis with Debug.startMethodTracing() and Debug.stopMethodTracing() in the Android source code, e.g. onCreate(), onDestroy() of an Activity.
   
   Execute the app, manually or automatically with tools like monkey
   
