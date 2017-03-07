@@ -183,8 +183,12 @@ def reCompile(decom_dir):
 
 
 if __name__=="__main__":
-	#apkpath = "app-release.apk"
-	apkpath = "app-release.apk"
+	if len(sys.argv) != 2:
+		print "python instrument.py path-to-input-apk"
+		sys.exit(-1)
+	apkpath = sys.argv[1]
+	if not os.path.exists(apkpath):
+		print "File %s not exisit"%apkpath
 	decom_dir = decompile(apkpath)
 	rewrite(apkpath, decom_dir)
 	outAPKPath = reCompile(decom_dir)
