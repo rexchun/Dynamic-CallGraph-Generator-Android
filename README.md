@@ -1,10 +1,10 @@
 # Dynamic-CallGraph-Generator-Android
 Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https://developer.android.com/studio/profile/traceview.html#dmtracedump]
 
-0. Usage scenario:
+1. Usage scenario:
   This tool is able to automatically rewrite the input APK file so as to inject the DEBUG label. Based on the trace file, you can easily generate the call graph starting from any customized entry component (Activity, Service, Content Provider, Receiver). The flow across framework call back functions are captured.    
 
-1. How to use:
+2. How to use:
 
   1.1 go to dir rewrite: cd rewrite, execute: python instrument.py path-to-input-apk. You will get rewritten APK file in dir out/ 
    
@@ -16,11 +16,11 @@ Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https:
   
   1.5 Generate the call graph: python BFS-CG.py profile.trace.dump[path-to-the-dumped-trace-file] "list.com.dynamicprofiledemo.MainActivity"[entry-class-name] callGraphMainActivity.txt[outputfile]
 
-2. How to interpret the call graph (shown in layers by BFS):
+3. How to interpret the call graph (shown in layers by BFS):
 
   [id]  method signature [child methods's id]
 
-  2.1 Sample:
+  3.1 Sample:
 
     layer 0:
 
