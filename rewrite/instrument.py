@@ -10,6 +10,7 @@ PATH = os.path.abspath(os.path.dirname(__file__))
 sign_tool_path = os.path.join(PATH, "tools", "sign.jar")
 IR_Dir = os.path.join(PATH, "IR")
 OUT_Dir = os.path.join(PATH, "out")
+template_path = os.path.join(PATH, "template", "template_MainApp.smali")
 
 def mkdir(d):
 	if not os.path.isdir(d):
@@ -123,7 +124,7 @@ def rewrite(apkpath, decom_dir):
 			hasAppComponentDeclared = True
 		else:
 			child.set("{http://schemas.android.com/apk/res/android}name", applicationName)
-			#tree.write(manifest_path,encoding="UTF-8",xml_declaration=True)
+			tree.write(manifest_path,encoding="UTF-8",xml_declaration=True)
 			print "Add a new Application class in Manifest %s"%manifest_path
 			hasAppComponentDeclared = False
 		for component in child:
@@ -150,6 +151,24 @@ def rewrite(apkpath, decom_dir):
 
 		entryActivityPath = os.path.join(decom_dir, "smali", "%s.smali"%entryActivity.replace(".","/"))
 		rewriteActivity(entryActivityPath)
+		if not hasAppComponentDeclared:
+			applicationPath = os.path.join(decom_dir, "smali", "%s.smali"%applicationName.replace(".","/"))
+			template_lines = []
+			with open(template_path, "r") as fobj:
+				template_lines = fobj.readlines()
+
+			with open(applicationPath, "w") as fobj:
+				androidPath =  "L%s"%applicationName.replace(".","/")
+				for l in template_lines:
+					if l.find("Llist/com/dynamicprofiledemo/MainApp") >= 0:
+						l = l.replace("Llist/com/dynamicprofiledemo/MainApp", androidPath)
+					elif l.startswith(".source"):
+						l = ".source \"%s.java\""%os.path.basename(androidPath)
+					fobj.write(l)
+				print "Add smali file %s"%applicationPath
+
+
+
 
 
 
@@ -165,7 +184,7 @@ def reCompile(decom_dir):
 
 if __name__=="__main__":
 	#apkpath = "app-release.apk"
-	apkpath = "dynamicapp-release.apk"
+	apkpath = "app-release.apk"
 	decom_dir = decompile(apkpath)
 	rewrite(apkpath, decom_dir)
 	outAPKPath = reCompile(decom_dir)
