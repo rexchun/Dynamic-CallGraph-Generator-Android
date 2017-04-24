@@ -1,8 +1,11 @@
 #!/usr/bin/python
-import sys, os
+import sys, os, json
 
 DELIMIT = "----------------------------------------------------"
 ENDSECTION = "======================================================================"
+
+FULL_MODE = "full"
+BFS_MODE = "bfs"
 
 class Node():
 	def __init__(self, methodId, sig):
@@ -34,7 +37,8 @@ class Graph():
 		elif len(tokens) == 6:
 			childSig = "%s %s"%(tokens[3], tokens[4])
 		elif len(tokens) == 3:
-			childSig = ""
+			childSig = childId 
+
 		else:
 			childSig = None
 
@@ -107,56 +111,97 @@ class Graph():
 
 
 
+	def fullDump(self, outputPath):
+		mapDict = {}
+		numEdges = 0
+		for nodeId in self.nodeMap:
+			nodeSig = self.nodeMap[nodeId].sig
+			neighbourIdLst = self.nodeMap[nodeId].neighbourIds
+			tmpSet = set()
+			if nodeSig in mapDict:
+				tmpSet = mapDict[nodeSig]
 
-
+			for neighbourID in neighbourIdLst:
+				if neighbourID in self.nodeMap:
+					neighbourSig = self.nodeMap[neighbourID].sig
+					if neighbourSig not in tmpSet:
+						tmpSet.add(neighbourSig)
+						numEdges += 1
+			mapDict[nodeSig] = tmpSet
+		for key in mapDict:
+			mapDict[key] = list(mapDict[key])
+		with open(outputPath, 'w') as fobj:
+			fobj.write(json.dumps(mapDict))
+		print "Num Nodes: %s, Num Edges: %s"%(len(mapDict), numEdges)
 
 	def bfs(self, outputPath):
 		if self.rootId == None:
 			print "Root node not found"
 			sys.exit(-1)
 		visited = set()
-		numNodes = 0
 		numEdges = 0
-		curLayer = []
-		nextLayer = []
-		curLayer.append(self.nodeMap[self.rootId])
-		with open(outputPath, 'w') as fobj:
-			while len(curLayer) > 0 or len(nextLayer) > 0:
-				curNode = curLayer[0]
-				curLayer.pop(0)
-				visited.add(curNode.id)
-				fobj.write("%s\n"%curNode.toString())
-				numNodes += 1
-				for childNodeId in curNode.neighbourIds:
-					numEdges += 1
-					if childNodeId in visited:
-						continue
-					else:
-						visited.add(childNodeId)
-						if childNodeId not in self.nodeMap:
-							print "Missing node definition Id: %s"%childNodeId
-							sysCallNode = Node(childNodeId, "")
-							self.nodeMap[childNodeId] = sysCallNode
-						
-						nextLayer.append(self.nodeMap[childNodeId])
-				if len(curLayer) == 0:
-					curLayer = nextLayer
-					nextLayer = []
-					fobj.write("%s\n"%DELIMIT)
-		print "Num Nodes: %s, Num Edges: %s"%(numNodes, numEdges)
+		queue = []
+		queue.append(self.rootId)
+		mapDict = {}
 
+		while len(queue) > 0:
+			nodeId = queue.pop(0)
+			visited.add(nodeId)
+			nodeSig = self.nodeMap[nodeId].sig
+			neighbourIdLst = self.nodeMap[nodeId].neighbourIds
+			tmpSet = set()
+			if nodeSig in mapDict:
+				tmpSet = mapDict[nodeSig]
+
+			for neighbourID in neighbourIdLst:
+				if neighbourID in self.nodeMap:
+					neighbourSig = self.nodeMap[neighbourID].sig
+					if neighbourSig not in tmpSet:
+						tmpSet.add(neighbourSig)
+						numEdges += 1 
+
+					if neighbourID not in visited and neighbourID not in queue:
+						visited.add(neighbourID)
+						queue.append(neighbourID)
+			mapDict[nodeSig] = tmpSet
+
+		for key in mapDict:
+			mapDict[key] = list(mapDict[key])
+		with open(outputPath, 'w') as fobj:
+			fobj.write(json.dumps(mapDict))
+		print "Num Nodes: %s, Num Edges: %s"%(len(mapDict), numEdges)
+
+
+def exceptionHandler():
+	print "python BFS-CG.py path-to-input-trace-file-dump mode[full/bfs] entry-class[required in bfs]"
+	sys.exit(-1)	
 
 if __name__=="__main__":
-	if len(sys.argv) != 4:
-		print "python BFS-CG.py path-to-input-trace-file-dump entry-class path-to-output"
-		sys.exit(-1)
+	if len(sys.argv) < 3:
+		exceptionHandler()
 	else:
 		inputPath = sys.argv[1]
-		entryClass = sys.argv[2]
-		outputPath = sys.argv[3]
 		if not os.path.isfile(inputPath):
-			print "%s not exist"%inputPath
+			print "File not exist: %s"%inputPath
 			sys.exit(-1)
 
-		graph = Graph(inputPath, entryClass)
-		graph.bfs(outputPath)
+		mode = sys.argv[2]
+		if mode == BFS_MODE:
+			if len(sys.argv) < 4:
+				exceptionHandler()
+			entryClass = sys.argv[3]
+
+			graph = Graph(inputPath, entryClass)
+			outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass)
+			graph.bfs(outputPath)
+		elif mode == FULL_MODE:
+			graph = Graph(inputPath, "DUMB")
+			outputPath = "dynamic-cfg-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""))
+			graph.fullDump(outputPath)
+		else:
+			exceptionHandler()
+
+		
+		
+
+
