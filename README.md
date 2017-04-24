@@ -2,7 +2,9 @@
 Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https://developer.android.com/studio/profile/traceview.html#dmtracedump]
 
 1. Usage scenario:
-  This tool is able to automatically rewrite the input APK file so as to inject the DEBUG label. Based on the trace file, you can easily     1.1 Generate the call graph starting from any customized entry component (Activity, Service, Content Provider, Receiver) 
+  This tool is able to automatically rewrite the input APK file so as to inject the DEBUG label. Based on the trace file, you can easily     
+  1.1 Generate the call graph starting from any customized entry component (Activity, Service, Content Provider, Receiver) 
+  
   1.2 Generate the complete call graph from the dynamic analysis
   
   The flow across framework call back functions are captured.    
