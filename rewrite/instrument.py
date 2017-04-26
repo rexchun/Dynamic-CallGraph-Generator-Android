@@ -11,6 +11,7 @@ sign_tool_path = os.path.join(PATH, "tools", "sign.jar")
 IR_Dir = os.path.join(PATH, "IR")
 OUT_Dir = os.path.join(PATH, "out")
 template_path = os.path.join(PATH, "template", "template_MainApp.smali")
+tracking_method_template_path = os.path.join(PATH, "template", "template_startTracking_method.smali")
 
 def mkdir(d):
 	if not os.path.isdir(d):
@@ -53,10 +54,12 @@ def rewriteActivity(activityPath):
 	hasonDestroy = False
 	hasstopTracing = False
 	inonDestroy = False
+	hasVirtualMethods = False
 	for l in lines:
 		if l.find(".method") >= 0 and l.find("onDestroy()V") >= 0: 
 			hasonDestroy = True
 			inonDestroy = True
+			hasVirtualMethods = True
 		elif l.find(".end method") >= 0:
 			if inonDestroy:
 				inonDesrory = False
@@ -65,39 +68,103 @@ def rewriteActivity(activityPath):
 		elif l.find("invoke-static {}, Landroid/os/Debug;->stopMethodTracing()V") >= 0:
 			if inonDestroy:
 				hasstopTracing = True
+		elif l.find("# virtual methods") >= 0:
+			hasVirtualMethods = True
 	if hasonDestroy:
 		if hasstopTracing:
 			print "Nothing to do return"
 			return 
 		else:
 			print "Add stopMethodTracing to onDestroy"
-			fobj = open(activityPath, "w")
+			with open(activityPath, 'w') as fobj:
+				for l in lines:
+					if l.find("Landroid/os/Debug;->stopMethodTracing") >= 0 or l.find("Landroid/os/Debug;->startMethodTracing") >= 0:
+						continue
+					fobj.write(l)
+					if l.find(".method") >= 0 and l.find("onDestroy()V") >= 0: 
+						fobj.write("    invoke-static {}, Landroid/os/Debug;->stopMethodTracing()V\n")
+
+	else:
+		print "Add the function onDestroy"
+		with open(activityPath, 'w') as fobj:
 			for l in lines:
 				if l.find("Landroid/os/Debug;->stopMethodTracing") >= 0 or l.find("Landroid/os/Debug;->startMethodTracing") >= 0:
 					continue
 				fobj.write(l)
-				if l.find(".method") >= 0 and l.find("onDestroy()V") >= 0: 
-					fobj.write("    invoke-static {}, Landroid/os/Debug;->stopMethodTracing()V\n")
-			fobj.close()
-	else:
-		print "Add the function onDestroy"
-		fobj = open(activityPath, "w")
-		for l in lines:
-			if l.find("Landroid/os/Debug;->stopMethodTracing") >= 0 or l.find("Landroid/os/Debug;->startMethodTracing") >= 0:
-				continue
-			fobj.write(l)
-		fobj.write("\n")
-		fobj.write(".method protected onDestroy()V\n")
-		fobj.write("    .locals 0\n")
-		fobj.write("    invoke-static {}, Landroid/os/Debug;->stopMethodTracing()V\n")
-		fobj.write("    invoke-super {p0}, Landroid/support/v7/app/AppCompatActivity;->onDestroy()V\n")
-		fobj.write("    return-void\n")
-		fobj.write(".end method\n")
-		fobj.close()
+			fobj.write("\n")
+			if not hasVirtualMethods:
+				fobj.write("# virtual methods\n")
+			fobj.write(".method protected onDestroy()V\n")
+			fobj.write("    .locals 0\n")
+			fobj.write("    invoke-static {}, Landroid/os/Debug;->stopMethodTracing()V\n")
+			fobj.write("    invoke-super {p0}, Landroid/support/v7/app/AppCompatActivity;->onDestroy()V\n")
+			fobj.write("    return-void\n")
+			fobj.write(".end method\n")
 	print "Finish rewrite %s"%activityPath
 
 
+def rewriteApp(appPath, androidPath):
+	fobj = open(appPath, 'r')
+	lines = fobj.readlines()
+	fobj.close()
+	hasVirtualMethods = False
+	hasonCreate = False
+	for l in lines:
+		if l.find("# virtual methods") >= 0:
+			hasVirtualMethods = True
+		elif l.find(".method") >= 0 and l.find("onCreate()V") >= 0: 
+			hasVirtualMethods = True
+			hasonCreate = True
+	
 
+	with open(appPath, 'w') as fobj:
+		if hasonCreate:
+			inonCreate = False
+			
+			for l in lines:
+				if l.find("Landroid/os/Debug;->stopMethodTracing") >= 0 or l.find("Landroid/os/Debug;->startMethodTracing") >= 0:
+					continue
+
+				if l.find(".method") >= 0 and l.find("onCreate()V") >= 0:
+					inonCreate = True
+				elif l.find(".end method") >= 0:
+					if inonCreate:
+						inonCreate = False
+				if inonCreate and l.find("return-void") >= 0:
+					print "In method onCreate(), inject call startTracking()"
+					fobj.write("    invoke-virtual {p0}, %s;->startTracking()V\n"%androidPath)
+				fobj.write(l)
+			
+		else:
+			for l in lines:
+				if l.find("Landroid/os/Debug;->stopMethodTracing") >= 0 or l.find("Landroid/os/Debug;->startMethodTracing") >= 0:
+					continue
+				fobj.write(l)
+
+			fobj.write("\n")
+			if not hasVirtualMethods:
+				fobj.write("# virtual methods\n")
+
+			fobj.write(".method public onCreate()V\n")
+			fobj.write("    .locals 0\n")
+			fobj.write("    invoke-super {p0}, Landroid/app/Application;->onCreate()V\n")
+			fobj.write("    invoke-virtual {p0}, %s;->startTracking()V\n"%androidPath)
+			fobj.write("    return-void\n")
+			fobj.write(".end method\n")
+			print "Add the method onCreate()"
+		template_lines = []
+		with open(tracking_method_template_path, 'r') as template_object:
+			template_lines = template_object.readlines()
+		
+		fobj.write("\n")
+		for template_command in template_lines:
+			if template_command.find("Lzyqu/com/boostdroid/MainAppClass") >= 0:
+				template_command = template_command.replace("Lzyqu/com/boostdroid/MainAppClass", androidPath)
+			fobj.write(template_command)
+
+
+
+	print "Finish rewrite %s"%appPath
 
 
 def rewrite(apkpath, decom_dir):
@@ -151,14 +218,16 @@ def rewrite(apkpath, decom_dir):
 
 		entryActivityPath = os.path.join(decom_dir, "smali", "%s.smali"%entryActivity.replace(".","/"))
 		rewriteActivity(entryActivityPath)
+
+		applicationPath = os.path.join(decom_dir, "smali", "%s.smali"%applicationName.replace(".","/"))
+		androidPath =  "L%s"%applicationName.replace(".","/")
 		if not hasAppComponentDeclared:
-			applicationPath = os.path.join(decom_dir, "smali", "%s.smali"%applicationName.replace(".","/"))
 			template_lines = []
 			with open(template_path, "r") as fobj:
 				template_lines = fobj.readlines()
 
 			with open(applicationPath, "w") as fobj:
-				androidPath =  "L%s"%applicationName.replace(".","/")
+				
 				for l in template_lines:
 					if l.find("Llist/com/dynamicprofiledemo/MainApp") >= 0:
 						l = l.replace("Llist/com/dynamicprofiledemo/MainApp", androidPath)
@@ -166,6 +235,10 @@ def rewrite(apkpath, decom_dir):
 						l = ".source \"%s.java\""%os.path.basename(androidPath)
 					fobj.write(l)
 				print "Add smali file %s"%applicationPath
+		else:
+			rewriteApp(applicationPath, androidPath)
+			
+
 
 
 

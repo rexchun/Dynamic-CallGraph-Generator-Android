@@ -19,6 +19,6 @@ Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https:
   
     2.4 Dump the trace file: dmtracedump -t 0 profile.trace > profile.trace.dump
   
-    2.5 Generate the call graph: python BFS-CG.py profile.trace.dump[path-to-the-dumped-trace-file] full/bfs[mode] "list.com.dynamicprofiledemo.MainActivity"[entry-class-name, required in BFS mode] 
+    2.5 Generate the call graph: python BFS-CG.py profile.trace.dump[path-to-the-dumped-trace-file] full/bfs[mode] "zyqu.com.boostdroid.MainActivity"[entry-class-name, required in BFS mode] 
 
 3. The output is organized as Map(Node, Set(Node)), where key is the source node and value is the set of neighbors
