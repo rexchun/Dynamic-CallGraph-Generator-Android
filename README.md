@@ -2,6 +2,7 @@
 Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https://developer.android.com/studio/profile/traceview.html#dmtracedump]
 
 0. Dependencies:
+	
 	Apktool [https://ibotpeaches.github.io/Apktool/]
 
 	aapt under Android sdk build-tools, remember to setup the environment variables
