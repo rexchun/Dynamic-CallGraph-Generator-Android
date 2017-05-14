@@ -177,7 +177,7 @@ def exceptionHandler():
 	sys.exit(-1)	
 
 if __name__=="__main__":
-	if len(sys.argv) < 3:
+	if len(sys.argv) < 4:
 		exceptionHandler()
 	else:
 		inputPath = sys.argv[1]
@@ -187,10 +187,7 @@ if __name__=="__main__":
 
 		mode = sys.argv[2]
 		if mode == BFS_MODE:
-			if len(sys.argv) < 4:
-				exceptionHandler()
 			entryClass = sys.argv[3]
-
 			graph = Graph(inputPath, entryClass)
 			outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass)
 			graph.bfs(outputPath)
