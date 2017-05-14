@@ -1,10 +1,10 @@
 # Dynamic-CallGraph-Generator-Android
 Generate the Call Graph by Dynamic Analysis based on Android dmtracedump [https://developer.android.com/studio/profile/traceview.html#dmtracedump]
 
-Dependencies:
+0. Dependencies:
+	Apktool [https://ibotpeaches.github.io/Apktool/]
 
-Apktool [https://ibotpeaches.github.io/Apktool/]
-
+	aapt under Android sdk build-tools, remember to setup the environment variables
 
 1. Usage scenario:
   This tool is able to automatically rewrite the input APK file so as to inject the DEBUG label. Based on the trace file, you can easily     
