@@ -176,6 +176,30 @@ def exceptionHandler():
 	print "python BFS-CG.py path-to-input-trace-file-dump mode[full/bfs] entry-class[required in bfs]"
 	sys.exit(-1)	
 
+def getAPKComponents(apkFilePath):
+	if not os.path.isfile(apkFilePath):
+		print "File not exist: %s"%apkFilePath
+		sys.exit(-1)
+	lines = os.popen("aapt dump xmltree %s AndroidManifest.xml"%apkFilePath).readlines()
+	res = []
+	entity = None
+	for l in lines:
+		l = l.strip()
+		if entity != None and entity.lower() in ["activity", "service", "receiver","provider"]:
+			if l.startswith("A: android:name"):
+				name = l[l.find("\"")+1:]
+				name = name[:name.find("\"")]
+				#print name, entity
+				res.append(name)
+				entity = None
+		else:
+			if l.startswith("E:"):
+				entity = l.split(" ")[1]
+
+
+	res = list(set(res))
+	return res
+
 if __name__=="__main__":
 	if len(sys.argv) < 4:
 		exceptionHandler()
@@ -192,9 +216,13 @@ if __name__=="__main__":
 			outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass)
 			graph.bfs(outputPath)
 		elif mode == FULL_MODE:
-			graph = Graph(inputPath, "DUMB")
-			outputPath = "dynamic-cfg-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""))
-			graph.fullDump(outputPath)
+			apkFilePath = sys.argv[3]
+			componentLst = getAPKComponents(apkFilePath)
+			for component in componentLst:
+				print "Component %s"%component
+				graph = Graph(inputPath, component)
+				outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component)
+				graph.fullDump(outputPath)
 		else:
 			exceptionHandler()
 
