@@ -234,6 +234,10 @@ if __name__=="__main__":
 			#service callbacks
 			rootSigSet.add("%s.<init> ()V"%component)
 			rootSigSet.add("%s.onStartCommand (Landroid/content/Intent;II)I"%component)
+			#content provider
+			rootSigSet.add("%s.onCreate ()Z"%component)
+			#receiver
+			rootSigSet.add("%s.onReceive (Landroid/content/Context;Landroid/content/Intent;)V"%component)
 			count = 0
 			for rootSig in rootSigSet:
 				graph = Graph(inputPath, rootSig)
@@ -257,6 +261,10 @@ if __name__=="__main__":
 				#service callbacks
 				rootSigSet.add("%s.<init> ()V"%component)
 				rootSigSet.add("%s.onStartCommand (Landroid/content/Intent;II)I"%component)
+				#content provider
+				rootSigSet.add("%s.onCreate ()Z"%component)
+				#receiver
+				rootSigSet.add("%s.onReceive (Landroid/content/Context;Landroid/content/Intent;)V"%component)
 				count = 0
 				for rootSig in rootSigSet:
 					graph = Graph(inputPath, rootSig)
