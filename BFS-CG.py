@@ -100,6 +100,8 @@ class Graph():
 							break
 						else:
 							if origL.startswith('['):
+								#if l.find("zyqu.com.boostdroid.LongService") >= 0:
+								#	print l
 								tokens = self.parseNode(l)
 								curNode = Node(tokens[0], tokens[1])
 								if curNode.sig == rootSig:
@@ -139,7 +141,7 @@ class Graph():
 	def bfs(self, outputPath):
 		if self.rootId == None:
 			print "Root node not found"
-			return 
+			return False
 		visited = set()
 		numEdges = 0
 		queue = []
@@ -172,6 +174,7 @@ class Graph():
 		with open(outputPath, 'w') as fobj:
 			fobj.write(json.dumps(mapDict))
 		print "Num Nodes: %s, Num Edges: %s"%(len(mapDict), numEdges)
+		return True
 
 
 def exceptionHandler():
@@ -226,14 +229,17 @@ if __name__=="__main__":
 		if mode == BFS_MODE:
 			component = sys.argv[3]
 			rootSigSet = set()
+			#activity callbacks
 			rootSigSet.add("%s.onCreate (Landroid/os/Bundle;)V"%component)
+			#service callbacks
 			rootSigSet.add("%s.<init> ()V"%component)
+			rootSigSet.add("%s.onStartCommand (Landroid/content/Intent;II)I"%component)
 			count = 0
 			for rootSig in rootSigSet:
 				graph = Graph(inputPath, rootSig)
 				outputPath = os.path.join(OUT_DIR, "dynamic-cfg-%s-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component, count))
-				graph.bfs(outputPath)
-				count+=1
+				if graph.bfs(outputPath):
+					count+=1
 		elif mode == FULL_MODE:
 			apkFilePath = sys.argv[3]
 			packageName = getpackagename(apkFilePath)
@@ -246,14 +252,17 @@ if __name__=="__main__":
 			componentLst = getAPKComponents(apkFilePath)
 			for component in componentLst:
 				rootSigSet = set()
+				#activity callbacks
 				rootSigSet.add("%s.onCreate (Landroid/os/Bundle;)V"%component)
+				#service callbacks
 				rootSigSet.add("%s.<init> ()V"%component)
+				rootSigSet.add("%s.onStartCommand (Landroid/content/Intent;II)I"%component)
 				count = 0
 				for rootSig in rootSigSet:
 					graph = Graph(inputPath, rootSig)
 					outputPath = os.path.join(outputDir, "dynamic-cfg-%s-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component, count))
-					graph.bfs(outputPath)
-					count+=1
+					if graph.bfs(outputPath):
+						count+=1
 		else:
 			exceptionHandler()
 
