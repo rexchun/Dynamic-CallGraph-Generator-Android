@@ -66,10 +66,10 @@ class Graph():
 
 		return res
 
-	def __init__(self, inputFilePath, entryClass):
+	def __init__(self, inputFilePath, rootSig):
+		print "RootSig %s"%rootSig
 		self.nodeMap = {}
 		self.rootId = None
-		rootSig = "%s.onCreate (Landroid/os/Bundle;)V"%entryClass
 		inSection = False
 		curNode = None
 
@@ -224,26 +224,36 @@ if __name__=="__main__":
 
 		mode = sys.argv[2]
 		if mode == BFS_MODE:
-			entryClass = sys.argv[3]
-			graph = Graph(inputPath, entryClass)
-			outputPath = os.path.join(OUT_DIR, "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass))
-			graph.bfs(outputPath)
+			component = sys.argv[3]
+			rootSigSet = set()
+			rootSigSet.add("%s.onCreate (Landroid/os/Bundle;)V"%component)
+			rootSigSet.add("%s.<init> ()V"%component)
+			count = 0
+			for rootSig in rootSigSet:
+				graph = Graph(inputPath, rootSig)
+				outputPath = os.path.join(OUT_DIR, "dynamic-cfg-%s-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component, count))
+				graph.bfs(outputPath)
+				count+=1
 		elif mode == FULL_MODE:
 			apkFilePath = sys.argv[3]
 			packageName = getpackagename(apkFilePath)
 			if packageName == None:
 				print "Cannot retrieve package Name from %s"%apkFilePath
 				sys.exit(-1)
-
+			outputDir = os.path.join(OUT_DIR, packageName)
+			if not os.path.exists(outputDir):
+				os.system("mkdir %s"%outputDir)
 			componentLst = getAPKComponents(apkFilePath)
 			for component in componentLst:
-				print "Component %s"%component
-				graph = Graph(inputPath, component)
-				outputDir = os.path.join(OUT_DIR, packageName)
-				if not os.path.exists(outputDir):
-					os.system("mkdir %s"%outputDir)
-				outputPath = os.path.join(outputDir, "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component))
-				graph.bfs(outputPath)
+				rootSigSet = set()
+				rootSigSet.add("%s.onCreate (Landroid/os/Bundle;)V"%component)
+				rootSigSet.add("%s.<init> ()V"%component)
+				count = 0
+				for rootSig in rootSigSet:
+					graph = Graph(inputPath, rootSig)
+					outputPath = os.path.join(outputDir, "dynamic-cfg-%s-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component, count))
+					graph.bfs(outputPath)
+					count+=1
 		else:
 			exceptionHandler()
 
