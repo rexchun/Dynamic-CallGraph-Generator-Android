@@ -7,6 +7,12 @@ ENDSECTION = "==================================================================
 FULL_MODE = "full"
 BFS_MODE = "bfs"
 
+PATH = os.path.abspath(os.path.dirname(__file__))
+OUT_DIR = os.path.join(PATH, "out")
+
+if not os.path.exists(OUT_DIR):
+	os.system("mkdir %s"%OUT_DIR)
+
 class Node():
 	def __init__(self, methodId, sig):
 		self.id = methodId
@@ -107,10 +113,6 @@ class Graph():
 											self.nodeMap[childId] = Node(childId, childSig)
 
 
-
-
-
-
 	def fullDump(self, outputPath):
 		mapDict = {}
 		numEdges = 0
@@ -137,7 +139,7 @@ class Graph():
 	def bfs(self, outputPath):
 		if self.rootId == None:
 			print "Root node not found"
-			sys.exit(-1)
+			return 
 		visited = set()
 		numEdges = 0
 		queue = []
@@ -176,6 +178,17 @@ def exceptionHandler():
 	print "python BFS-CG.py path-to-input-trace-file-dump mode[full/bfs] entry-class[required in bfs]"
 	sys.exit(-1)	
 
+def getpackagename(filepath):
+	res = os.popen("aapt dump badging %s | grep package:\ name"%filepath).read()
+	tokens = res.split(' ')
+	for elem in tokens:
+		elem=elem.strip()
+		if elem.startswith("name="):
+			elem = elem.replace('name=','')
+			elem = elem.replace("'","")
+			return elem
+	return None
+
 def getAPKComponents(apkFilePath):
 	if not os.path.isfile(apkFilePath):
 		print "File not exist: %s"%apkFilePath
@@ -213,16 +226,24 @@ if __name__=="__main__":
 		if mode == BFS_MODE:
 			entryClass = sys.argv[3]
 			graph = Graph(inputPath, entryClass)
-			outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass)
+			outputPath = os.path.join(OUT_DIR, "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), entryClass))
 			graph.bfs(outputPath)
 		elif mode == FULL_MODE:
 			apkFilePath = sys.argv[3]
+			packageName = getpackagename(apkFilePath)
+			if packageName == None:
+				print "Cannot retrieve package Name from %s"%apkFilePath
+				sys.exit(-1)
+
 			componentLst = getAPKComponents(apkFilePath)
 			for component in componentLst:
 				print "Component %s"%component
 				graph = Graph(inputPath, component)
-				outputPath = "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component)
-				graph.fullDump(outputPath)
+				outputDir = os.path.join(OUT_DIR, packageName)
+				if not os.path.exists(outputDir):
+					os.system("mkdir %s"%outputDir)
+				outputPath = os.path.join(outputDir, "dynamic-cfg-%s-%s"%(os.path.basename(inputPath).replace(".trace.dump", ""), component))
+				graph.bfs(outputPath)
 		else:
 			exceptionHandler()
 
